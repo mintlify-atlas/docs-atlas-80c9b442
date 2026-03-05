@@ -1,0 +1,198 @@
+---
+title: Introduction
+description: Get started with the OpenAI Python SDK for building AI-powered applications
+---
+
+The OpenAI Python library provides convenient access to the OpenAI REST API from any Python 3.9+ application. The library includes type definitions for all request params and response fields, and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
+
+## What is the OpenAI Python SDK?
+
+The OpenAI Python SDK is the official Python library for interacting with OpenAI's API. It simplifies the process of building AI-powered applications by providing:
+
+- **Type-safe interfaces** - Complete type definitions using TypedDicts and Pydantic models
+- **Sync and async support** - Choose between synchronous `OpenAI` and asynchronous `AsyncOpenAI` clients
+- **Automatic retries** - Built-in retry logic with exponential backoff for failed requests
+- **Streaming responses** - Server-sent events (SSE) support for real-time streaming
+- **Pagination helpers** - Auto-paginating iterators for list endpoints
+- **Error handling** - Comprehensive exception types for different error scenarios
+
+## Key Features
+
+### Responses API
+
+The primary API for interacting with OpenAI models. Generate text, handle conversations, and process multi-modal inputs:
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+response = client.responses.create(
+    model="gpt-5.2",
+    instructions="You are a coding assistant that talks like a pirate.",
+    input="How do I check if a Python object is an instance of a class?",
+)
+
+print(response.output_text)
+```
+
+### Chat Completions API
+
+The previous standard for generating text, supported indefinitely:
+
+```python
+from openai import OpenAI
+
+client = OpenAI()
+
+completion = client.chat.completions.create(
+    model="gpt-5.2",
+    messages=[
+        {"role": "developer", "content": "Talk like a pirate."},
+        {"role": "user", "content": "How do I check if a Python object is an instance of a class?"},
+    ],
+)
+
+print(completion.choices[0].message.content)
+```
+
+### Vision Support
+
+Process images alongside text for multi-modal interactions:
+
+```python
+response = client.responses.create(
+    model="gpt-5.2",
+    input=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "What is in this image?"},
+                {"type": "input_image", "image_url": "https://example.com/image.jpg"},
+            ],
+        }
+    ],
+)
+```
+
+### Async Support
+
+Use `AsyncOpenAI` for asynchronous operations:
+
+```python
+import asyncio
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI()
+
+async def main():
+    response = await client.responses.create(
+        model="gpt-5.2",
+        input="Explain quantum computing to a five year old."
+    )
+    print(response.output_text)
+
+asyncio.run(main())
+```
+
+### Streaming Responses
+
+Stream responses in real-time using Server-Sent Events:
+
+```python
+stream = client.responses.create(
+    model="gpt-5.2",
+    input="Write a short story about a robot.",
+    stream=True,
+)
+
+for event in stream:
+    print(event)
+```
+
+### Realtime API
+
+Build low-latency, multi-modal conversational experiences with WebSocket support:
+
+```python
+import asyncio
+from openai import AsyncOpenAI
+
+async def main():
+    client = AsyncOpenAI()
+
+    async with client.realtime.connect(model="gpt-realtime") as connection:
+        await connection.session.update(
+            session={"type": "realtime", "output_modalities": ["text"]}
+        )
+
+        await connection.conversation.item.create(
+            item={
+                "type": "message",
+                "role": "user",
+                "content": [{"type": "input_text", "text": "Say hello!"}],
+            }
+        )
+        await connection.response.create()
+
+        async for event in connection:
+            if event.type == "response.output_text.delta":
+                print(event.delta, flush=True, end="")
+            elif event.type == "response.done":
+                break
+
+asyncio.run(main())
+```
+
+## API Resources
+
+The SDK provides access to the following OpenAI API resources:
+
+<CardGroup cols={2}>
+  <Card title="Responses" icon="message" href="/api-reference/responses">
+    Primary API for generating text and handling conversations
+  </Card>
+  <Card title="Chat Completions" icon="comments" href="/api-reference/chat">
+    Generate chat-based completions with message history
+  </Card>
+  <Card title="Embeddings" icon="vector-square" href="/api-reference/embeddings">
+    Create vector embeddings for text
+  </Card>
+  <Card title="Images" icon="image" href="/api-reference/images">
+    Generate and edit images with DALL·E
+  </Card>
+  <Card title="Audio" icon="microphone" href="/api-reference/audio">
+    Speech-to-text and text-to-speech
+  </Card>
+  <Card title="Files" icon="file" href="/api-reference/files">
+    Upload and manage files
+  </Card>
+  <Card title="Fine-tuning" icon="sliders" href="/api-reference/fine-tuning">
+    Create custom models with your data
+  </Card>
+  <Card title="Batches" icon="layer-group" href="/api-reference/batches">
+    Process async batch requests
+  </Card>
+  <Card title="Realtime" icon="signal-stream" href="/api-reference/realtime">
+    Low-latency multi-modal conversations
+  </Card>
+  <Card title="Moderations" icon="shield-check" href="/api-reference/moderations">
+    Classify content for safety
+  </Card>
+</CardGroup>
+
+## Requirements
+
+- Python 3.9 or higher
+- OpenAI API key ([get one here](https://platform.openai.com/settings/organization/api-keys))
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install the SDK and set up your environment
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Make your first API call in minutes
+  </Card>
+</CardGroup>
